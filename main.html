@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xanadu - Large File CSV Converter</title>
+    <link rel="icon" type="image/svg+xml" href="image.png">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .header {
+            background: #ffffff;
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .logo-image {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .content {
+            padding: 32px;
+        }
+        
+        h1 {
+            color: #374151;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .description {
+            text-align: center;
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .upload-section {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: #4f46e5;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 16px;
+            border: none;
+        }
+        
+        .file-input-wrapper:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+        
+        #fileInput {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-info {
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 16px 0;
+            text-align: center;
+            color: #6b7280;
+        }
+        
+        .file-selected {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        
+        .image-preview {
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .image-preview img {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
+        }
+        
+        .image-info {
+            background: #f0f9ff;
+            border: 2px dashed #0ea5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+            color: #0c4a6e;
+            font-size: 14px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 24px 0;
+        }
+        
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin: 8px 8px;
+        }
+        
+        button:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 12px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .output-section {
+            margin-top: 32px;
+        }
+        
+        .file-item {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .file-item:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .file-info-details {
+            color: #6b7280;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .download-btn {
+            background: #10b981;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        
+        .download-btn:hover {
+            background: #059669;
+        }
+        
+        .stats {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .stats h3 {
+            margin: 0 0 12px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .stats p {
+            margin: 4px 0;
+            opacity: 0.9;
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border: 1px solid #fecaca;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background: #fffbeb;
+            color: #92400e;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border: 1px solid #fed7aa;
+            font-size: 14px;
+        }
+        
+        .splits-selector {
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .splits-selector label {
+            font-weight: 500;
+            margin-right: 12px;
+            color: #374151;
+        }
+        
+        .splits-selector select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .chunk-settings {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .chunk-settings label {
+            display: inline-block;
+            margin: 0 16px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .chunk-settings input, .chunk-settings select {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin: 0 8px;
+            font-size: 14px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>Xanadu CSV Converter</h1>
+                <p style="margin: 0; color: #6b7280; font-size: 14px;">Process large pipe-delimited files with streaming technology</p>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h1>Large File CSV Converter</h1>
+            <p class="description">
+                Streaming processor for very large files (30-40 lakh records)
+            </p>
+            
+            <div class="upload-section">
+                <label for="fileInput" class="file-input-wrapper">
+                    📁 Choose Large Text File (.txt)
+                </label>
+                <input type="file" id="fileInput" accept=".txt" />
+                
+                <div id="fileInfo" class="file-info">
+                    No file selected. Choose a pipe-delimited text file to process.
+                </div>
+                
+                <div class="chunk-settings">
+                    <label for="chunkSize">Chunk Size:</label>
+                    <select id="chunkSize">
+                        <option value="1048576">1 MB chunks (Recommended)</option>
+                        <option value="2097152">2 MB chunks</option>
+                        <option value="5242880">5 MB chunks</option>
+                    </select>
+                    
+                    <label for="splitCount">Split into:</label>
+                    <select id="splitCount">
+                        <option value="4">4 CSV files</option>
+                        <option value="5" selected>5 CSV files</option>
+                        <option value="6">6 CSV files</option>
+                        <option value="8">8 CSV files</option>
+                        <option value="10">10 CSV files</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="processBtn" onclick="processFileStreaming()" disabled>🔄 Stream Convert to CSV</button>
+                <button onclick="clearAll()">🗑️ Clear</button>
+            </div>
+            
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div id="progressText" class="progress-text">Processing...</div>
+            </div>
+            
+            <div id="output" class="output-section"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let processedFiles = [];
+        let isProcessing = false;
+        
+        // File input handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            selectedFile = e.target.files[0];
+            const fileInfo = document.getElementById('fileInfo');
+            const processBtn = document.getElementById('processBtn');
+            
+            if (selectedFile) {
+                const sizeInMB = (selectedFile.size / 1024 / 1024).toFixed(2);
+                const sizeInGB = (selectedFile.size / 1024 / 1024 / 1024).toFixed(2);
+                
+                let sizeDisplay = sizeInMB < 1024 ? `${sizeInMB} MB` : `${sizeInGB} GB`;
+                
+                fileInfo.innerHTML = `
+                    <strong>📄 ${selectedFile.name}</strong><br>
+                    Size: ${sizeDisplay}<br>
+                    Type: ${selectedFile.type || 'text/plain'}<br>
+                    ✅ Ready for streaming processing
+                `;
+                fileInfo.classList.add('file-selected');
+                processBtn.disabled = false;
+                
+                if (selectedFile.size === 0) {
+                    fileInfo.innerHTML += '<br><div class="error">⚠️ File appears to be empty!</div>';
+                    processBtn.disabled = true;
+                } else if (selectedFile.size > 500 * 1024 * 1024) { // > 500MB
+                    fileInfo.innerHTML += '<br><div class="warning">⚠️ Very large file! Processing will use streaming to prevent memory issues.</div>';
+                }
+            } else {
+                fileInfo.innerHTML = 'No file selected. Choose a pipe-delimited text file to process.';
+                fileInfo.classList.remove('file-selected');
+                processBtn.disabled = true;
+            }
+        });
+
+        async function processFileStreaming() {
+            if (!selectedFile || isProcessing) return;
+            
+            isProcessing = true;
+            const processBtn = document.getElementById('processBtn');
+            processBtn.disabled = true;
+            processBtn.textContent = '⏳ Processing...';
+            
+            const splitCount = parseInt(document.getElementById('splitCount').value);
+            const chunkSize = parseInt(document.getElementById('chunkSize').value);
+            const output = document.getElementById('output');
+            const progressContainer = document.getElementById('progressContainer');
+            
+            // Clear previous results
+            output.innerHTML = '';
+            processedFiles = [];
+            
+            // Show progress bar
+            progressContainer.style.display = 'block';
+            updateProgress(0, 'Starting streaming process...');
+            
+            try {
+                const result = await streamProcessLargeFile(selectedFile, splitCount, chunkSize);
+                
+                if (result.error) {
+                    showError(result.error);
+                    return;
+                }
+                
+                updateProgress(100, 'Processing complete!');
+                displayResults(result.totalRows, splitCount);
+                
+                // Hide progress bar after 3 seconds
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Streaming processing error:', error);
+                showError(`Error processing file: ${error.message}`);
+                progressContainer.style.display = 'none';
+            } finally {
+                isProcessing = false;
+                processBtn.disabled = false;
+                processBtn.textContent = '🔄 Stream Convert to CSV';
+            }
+        }
+        
+        async function streamProcessLargeFile(file, splitCount, chunkSize) {
+            const fileSize = file.size;
+            let position = 0;
+            let headers = null;
+            let totalRows = 0;
+            let buffer = '';
+            
+            // Initialize CSV file streams
+            const csvWriters = [];
+            for (let i = 0; i < splitCount; i++) {
+                csvWriters.push({
+                    data: [],
+                    currentSize: 0
+                });
+            }
+            
+            updateProgress(5, 'Reading file headers...');
+            
+            while (position < fileSize) {
+                const chunk = file.slice(position, position + chunkSize);
+                const text = await readChunkAsText(chunk);
+                
+                if (!text) break;
+                
+                buffer += text;
+                
+                // Process complete lines
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || ''; // Keep incomplete line for next iteration
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    if (!headers) {
+                        // First line is header
+                        headers = parseDelimitedLine(line);
+                        if (headers.length === 0) {
+                            throw new Error('Could not parse header row');
+                        }
+                        
+                        // Add headers to all CSV writers
+                        csvWriters.forEach(writer => {
+                            writer.data.push(generateCSVRow(headers));
+                        });
+                        
+                        updateProgress(10, `Found ${headers.length} columns. Processing data...`);
+                        continue;
+                    }
+                    
+                    // Process data row
+                    const row = parseDelimitedLine(line);
+                    if (row.length > 0) {
+                        // Normalize row length
+                        while (row.length < headers.length) {
+                            row.push('');
+                        }
+                        if (row.length > headers.length) {
+                            row.length = headers.length;
+                        }
+                        
+                        // Distribute to CSV writers
+                        const writerIndex = totalRows % splitCount;
+                        csvWriters[writerIndex].data.push(generateCSVRow(row));
+                        
+                        totalRows++;
+                        
+                        // Update progress every 10000 rows
+                        if (totalRows % 10000 === 0) {
+                            const progress = 10 + Math.floor((position / fileSize) * 80);
+                            updateProgress(progress, `Processed ${totalRows.toLocaleString()} rows...`);
+                            
+                            // Allow UI to update
+                            await new Promise(resolve => setTimeout(resolve, 1));
+                        }
+                    }
+                }
+                
+                position += chunkSize;
+                
+                // Update progress based on file position
+                const fileProgress = Math.floor((position / fileSize) * 80);
+                updateProgress(10 + fileProgress, `Reading file... ${Math.floor((position / fileSize) * 100)}%`);
+            }
+            
+            // Process any remaining buffer
+            if (buffer.trim() && headers) {
+                const row = parseDelimitedLine(buffer.trim());
+                if (row.length > 0) {
+                    while (row.length < headers.length) {
+                        row.push('');
+                    }
+                    if (row.length > headers.length) {
+                        row.length = headers.length;
+                    }
+                    
+                    const writerIndex = totalRows % splitCount;
+                    csvWriters[writerIndex].data.push(generateCSVRow(row));
+                    totalRows++;
+                }
+            }
+            
+            updateProgress(90, 'Generating downloadable files...');
+            
+            // Generate download files
+            processedFiles = csvWriters.map((writer, index) => {
+                const csvContent = writer.data.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                
+                return {
+                    name: `credit_data_part_${index + 1}.csv`,
+                    url: url,
+                    rowCount: writer.data.length - 1, // Subtract header row
+                    size: formatFileSize(blob.size)
+                };
+            }).filter(file => file.rowCount > 0);
+            
+            return {
+                totalRows,
+                headers
+            };
+        }
+        
+        function readChunkAsText(chunk) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(chunk, 'UTF-8');
+            });
+        }
+        
+        function parseDelimitedLine(line) {
+            const parts = line.split('|');
+            const result = [];
+            
+            for (let part of parts) {
+                let cleaned = part.trim();
+                if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                    cleaned = cleaned.slice(1, -1);
+                }
+                cleaned = cleaned.replace(/""/g, '"');
+                result.push(cleaned);
+            }
+            
+            return result;
+        }
+        
+        function generateCSVRow(fields) {
+            return fields.map(field => {
+                const cleanField = String(field || '').replace(/"/g, '""');
+                return `"${cleanField}"`;
+            }).join(',');
+        }
+        
+        function updateProgress(percent, message) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = message;
+        }
+        
+        function displayResults(totalRows, splitCount) {
+            const output = document.getElementById('output');
+            
+            let html = `
+                <div class="stats">
+                    <h3>✅ Processing Complete!</h3>
+                    <p>Total rows processed: ${totalRows.toLocaleString()}</p>
+                    <p>Files generated: ${processedFiles.length}</p>
+                    <p>Split strategy: Round-robin distribution</p>
+                </div>
+            `;
+            
+            processedFiles.forEach((file, index) => {
+                html += `
+                    <div class="file-item">
+                        <div class="file-name">📊 ${file.name}</div>
+                        <div class="file-info-details">
+                            Rows: ${file.rowCount.toLocaleString()} | Size: ${file.size}
+                        </div>
+                        <button class="download-btn" onclick="downloadFile('${file.url}', '${file.name}')">
+                            💾 Download CSV
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div style="text-align: center; margin-top: 24px;">
+                    <button onclick="downloadAllFiles()" style="background: #7c3aed;">
+                        📦 Download All Files
+                    </button>
+                </div>
+            `;
+            
+            output.innerHTML = html;
+        }
+        
+        function downloadFile(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        function downloadAllFiles() {
+            processedFiles.forEach((file, index) => {
+                setTimeout(() => {
+                    downloadFile(file.url, file.name);
+                }, index * 500); // Stagger downloads by 500ms
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+            return (bytes / 1024 / 1024 / 1024).toFixed(1) + ' GB';
+        }
+        
+        function showError(message) {
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <div class="error">
+                    <strong>❌ Error:</strong> ${message}
+                </div>
+            `;
+        }
+        
+        function clearAll() {
+            selectedFile = null;
+            processedFiles.forEach(file => {
+                if (file.url) {
+                    URL.revokeObjectURL(file.url);
+                }
+            });
+            processedFiles = [];
+            
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').innerHTML = 'No file selected. Choose a pipe-delimited text file to process.';
+            document.getElementById('fileInfo').classList.remove('file-selected');
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+        
+        // Handle drag and drop
+        const container = document.querySelector('.container');
+        
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            container.style.borderColor = '#4f46e5';
+            container.style.backgroundColor = '#f8faff';
+        });
+        
+        container.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            container.style.borderColor = '#e5e7eb';
+            container.style.backgroundColor = '#ffffff';
+        });
+        
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            container.style.borderColor = '#e5e7eb';
+            container.style.backgroundColor = '#ffffff';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.txt')) {
+                document.getElementById('fileInput').files = files;
+                document.getElementById('fileInput').dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+</body>
+</html>
